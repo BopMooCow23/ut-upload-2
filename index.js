@@ -886,17 +886,6 @@ function resume() {
   }
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") {
-    // Tab was hidden.
-    pause();
-  } else {
-    // Tab became visible again.
-    // Do NOT check isMultiplayer().
-    resume();
-  }
-});
-
 
 function quitIfSupported() {
   if (window.oprt && window.oprt.closeTab) { /* GX Mobile API */
