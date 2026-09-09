@@ -934,11 +934,28 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
   outputContainerElement.hidden = true;
 }
 
-document.addEventListener("visibilitychange", (event) => {
-  if (document.visibilityState != "visible") {
-    pause();
-  } else if (isMultiplayer()) {
-    resume();
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") {
+   
+    try {
+      pause();
+    } catch (error) {
+      console.error("Game pause failed:", error);
+    }
+  } else {
+    
+    try {
+      if (typeof GM_is_multiplayer === "function") {
+        if (GM_is_multiplayer()) {
+          resume();
+        }
+      } else {
+        
+        resume();
+      }
+    } catch (error) {
+      console.error("Game resume failed:", error);
+    }
   }
 });
 
