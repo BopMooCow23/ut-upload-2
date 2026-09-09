@@ -842,23 +842,61 @@ function ensureAspectRatio() {
 }
 
 function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
-  if (!canvasElement.classList.contains("active")) { // Wait for the canvas to load.
-    return
+  if (!canvasElement.classList.contains("active")) {
+    return;
   }
-  
-  GM_pause();
+
+  try {
+    if (typeof GM_pause === "function") {
+      GM_pause();
+    }
+  } catch (error) {
+    console.error("GM_pause failed:", error);
+  }
+
   pauseMenu.hidden = false;
   canvasElement.classList.add("paused");
 }
 
 function resume() {
-  GM_unpause();
+  try {
+    if (typeof GM_unpause === "function") {
+      GM_unpause();
+    }
+  } catch (error) {
+    console.error("GM_unpause failed:", error);
+  }
+
   pauseMenu.hidden = true;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
-  enterFullscreenIfSupported();
-  lockOrientationIfSupported();
+
+  // These are harmless outside Opera GX because they
+  // return immediately when the GX API isn't present.
+  try {
+    enterFullscreenIfSupported();
+  } catch (error) {
+    console.error("Fullscreen restore failed:", error);
+  }
+
+  try {
+    lockOrientationIfSupported();
+  } catch (error) {
+    console.error("Orientation restore failed:", error);
+  }
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") {
+    // Tab was hidden.
+    pause();
+  } else {
+    // Tab became visible again.
+    // Do NOT check isMultiplayer().
+    resume();
+  }
+});
+
 
 function quitIfSupported() {
   if (window.oprt && window.oprt.closeTab) { /* GX Mobile API */
