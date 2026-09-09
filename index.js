@@ -123,14 +123,65 @@ var Module = {
   },
 };
 Module.setStatus("Downloading...");
-window.onerror = function (event) {
-  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-  Module.setStatus("Exception thrown, see JavaScript console");
-  spinnerElement.style.display = "none";
-  Module.setStatus = function (text) {
-    if (text) Module.printErr("[post-exception status] " + text);
-  };
+window.onerror = function (
+  message,
+  source,
+  lineno,
+  colno,
+  error
+) {
+  var text =
+    "REAL GAME ERROR\n\n" +
+    "Name: " +
+    (error && error.name
+      ? error.name
+      : "Error") +
+    "\n\n" +
+    "Message:\n" +
+    String(message) +
+    "\n\n" +
+    "Source:\n" +
+    String(source) +
+    "\n\n" +
+    "Line: " +
+    String(lineno) +
+    "\n" +
+    "Column: " +
+    String(colno);
+
+  if (error && error.stack) {
+    text +=
+      "\n\nStack:\n" +
+      error.stack;
+  }
+
+  console.error(text);
+
+  if (typeof Module !== "undefined") {
+    Module.setStatus = function (msg) {
+      if (msg) {
+        Module.printErr(msg);
+      }
+    };
+  }
+
+  var status =
+    document.getElementById("status");
+
+  if (status) {
+    status.textContent = text;
+  }
+
+  if (
+    typeof spinnerElement !== "undefined" &&
+    spinnerElement
+  ) {
+    spinnerElement.style.display = "none";
+  }
+
+  return true;
 };
+
 
 // Route URL GET parameters to argc+argv
 if (typeof window === "object") {
