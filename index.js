@@ -1,6 +1,14 @@
 
 const CHANGE_ASPECT_RATIO = true;
 
+const debugBox = document.createElement('div');
+debugBox.style.cssText = 'position:fixed; top:0; left:0; background:black; color:lime; font-size:14px; padding:4px; z-index:99999;';
+document.body.appendChild(debugBox);
+
+function debugLog(msg) {
+  debugBox.textContent = msg;
+}
+
 var bodyElement = document.getElementsByTagName("body")[0];
 var statusElement = document.getElementById("status");
 var progressElement = document.getElementById("progress");
@@ -790,8 +798,9 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
-function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
-  if (!canvasElement.classList.contains("active")) { // Wait for the canvas to load.
+function pause() {
+  debugLog('pause() called, canvas active? ' + canvasElement.classList.contains("active"));
+  if (!canvasElement.classList.contains("active")) {
     return
   }
   
