@@ -841,6 +841,7 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
+
 function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
   if (!canvasElement.classList.contains("active")) {
     return;
@@ -870,14 +871,9 @@ function resume() {
   pauseMenu.hidden = true;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
+}
 
-  // These are harmless outside Opera GX because they
-  // return immediately when the GX API isn't present.
-  try {
-    enterFullscreenIfSupported();
-  } catch (error) {
-    console.error("Fullscreen restore failed:", error);
-  }
+
 
   try {
     lockOrientationIfSupported();
