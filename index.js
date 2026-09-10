@@ -1,14 +1,5 @@
-document.title = 'SCRIPT LOADED ' + Date.now();
 
 const CHANGE_ASPECT_RATIO = true;
-
-function debugLog(msg) {
-  document.title = msg;
-}
-
-function debugLog(msg) {
-  debugBox.textContent = msg;
-}
 
 var bodyElement = document.getElementsByTagName("body")[0];
 var statusElement = document.getElementById("status");
@@ -132,14 +123,65 @@ var Module = {
   },
 };
 Module.setStatus("Downloading...");
-window.onerror = function (event) {
-  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-  Module.setStatus("Exception thrown, see JavaScript console");
-  spinnerElement.style.display = "none";
-  Module.setStatus = function (text) {
-    if (text) Module.printErr("[post-exception status] " + text);
-  };
+window.onerror = function (
+  message,
+  source,
+  lineno,
+  colno,
+  error
+) {
+  var text =
+    "REAL GAME ERROR\n\n" +
+    "Name: " +
+    (error && error.name
+      ? error.name
+      : "Error") +
+    "\n\n" +
+    "Message:\n" +
+    String(message) +
+    "\n\n" +
+    "Source:\n" +
+    String(source) +
+    "\n\n" +
+    "Line: " +
+    String(lineno) +
+    "\n" +
+    "Column: " +
+    String(colno);
+
+  if (error && error.stack) {
+    text +=
+      "\n\nStack:\n" +
+      error.stack;
+  }
+
+  console.error(text);
+
+  if (typeof Module !== "undefined") {
+    Module.setStatus = function (msg) {
+      if (msg) {
+        Module.printErr(msg);
+      }
+    };
+  }
+
+  var status =
+    document.getElementById("status");
+
+  if (status) {
+    status.textContent = text;
+  }
+
+  if (
+    typeof spinnerElement !== "undefined" &&
+    spinnerElement
+  ) {
+    spinnerElement.style.display = "none";
+  }
+
+  return true;
 };
+
 
 // Route URL GET parameters to argc+argv
 if (typeof window === "object") {
@@ -799,16 +841,14 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
-function pause() {
-  debugLog('pause() called, active=' + canvasElement.classList.contains("active"));
-  if (!canvasElement.classList.contains("active")) {
+function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
+  if (!canvasElement.classList.contains("active")) { // Wait for the canvas to load.
     return
   }
   
   GM_pause();
   pauseMenu.hidden = false;
   canvasElement.classList.add("paused");
-  debugLog('pause() completed, GM_pause called');
 }
 
 function resume() {
@@ -894,12 +934,28 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
   outputContainerElement.hidden = true;
 }
 
-document.addEventListener("visibilitychange", (event) => {
-  debugLog('visibilitychange fired: ' + document.visibilityState);
+document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") {
-    pause();
+   
+    try {
+      pause();
+    } catch (error) {
+      console.error("Game pause failed:", error);
+    }
   } else {
-    resume();
+    
+    try {
+      if (typeof GM_is_multiplayer === "function") {
+        if (GM_is_multiplayer()) {
+          resume();
+        }
+      } else {
+        
+        resume();
+      }
+    } catch (error) {
+      console.error("Game resume failed:", error);
+    }
   }
 });
 
