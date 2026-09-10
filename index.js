@@ -963,21 +963,28 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
 
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") {
+   
     try {
       pause();
     } catch (error) {
       console.error("Game pause failed:", error);
     }
   } else {
+    
     try {
-      resume();
+      if (typeof GM_is_multiplayer === "function") {
+        if (GM_is_multiplayer()) {
+          resume();
+        }
+      } else {
+        
+        resume();
+      }
     } catch (error) {
       console.error("Game resume failed:", error);
     }
   }
 });
-
-
 
 window.addEventListener("load", (event) => {
   if ((!window.oprt || !window.oprt.enterFullscreen) && (!window.chrome || !window.chrome.runtime || !window.chrome.runtime.sendMessage)) {
