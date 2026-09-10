@@ -1,9 +1,9 @@
 
 const CHANGE_ASPECT_RATIO = true;
 
-const debugBox = document.createElement('div');
-debugBox.style.cssText = 'position:fixed; top:0; left:0; background:black; color:lime; font-size:14px; padding:4px; z-index:99999;';
-document.body.appendChild(debugBox);
+function debugLog(msg) {
+  document.title = msg;
+}
 
 function debugLog(msg) {
   debugBox.textContent = msg;
@@ -799,7 +799,7 @@ function ensureAspectRatio() {
 }
 
 function pause() {
-  debugLog('pause() called, canvas active? ' + canvasElement.classList.contains("active"));
+  debugLog('pause() called, active=' + canvasElement.classList.contains("active"));
   if (!canvasElement.classList.contains("active")) {
     return
   }
@@ -807,6 +807,7 @@ function pause() {
   GM_pause();
   pauseMenu.hidden = false;
   canvasElement.classList.add("paused");
+  debugLog('pause() completed, GM_pause called');
 }
 
 function resume() {
@@ -893,6 +894,7 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
 }
 
 document.addEventListener("visibilitychange", (event) => {
+  debugLog('visibilitychange fired: ' + document.visibilityState);
   if (document.visibilityState !== "visible") {
     pause();
   } else {
