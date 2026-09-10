@@ -852,7 +852,7 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
 
 function resume() {
   GM_unpause();
-  pauseMenu.hidden = true;
+  pauseMenu.hidden = false;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
   enterFullscreenIfSupported();
