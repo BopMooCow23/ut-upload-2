@@ -847,6 +847,8 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
     return;
   }
 
+  console.log("PAUSE");
+
   try {
     if (typeof GM_pause === "function") {
       GM_pause();
@@ -860,6 +862,8 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
 }
 
 function resume() {
+  console.log("RESUME");
+
   try {
     if (typeof GM_unpause === "function") {
       GM_unpause();
@@ -871,9 +875,12 @@ function resume() {
   pauseMenu.hidden = true;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
-}
 
-
+  try {
+    enterFullscreenIfSupported();
+  } catch (error) {
+    console.error("Fullscreen restore failed:", error);
+  }
 
   try {
     lockOrientationIfSupported();
@@ -882,14 +889,21 @@ function resume() {
   }
 }
 
-
 function quitIfSupported() {
-  if (window.oprt && window.oprt.closeTab) { /* GX Mobile API */
+  if (window.oprt && window.oprt.closeTab) {
     window.oprt.closeTab();
-  } else if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
-    window.chrome.runtime.sendMessage('mpojjmidmnpcpopbebmecmjdkdbgdeke', { command: 'closeTab' })
+  } else if (
+    window.chrome &&
+    window.chrome.runtime &&
+    window.chrome.runtime.sendMessage
+  ) {
+    window.chrome.runtime.sendMessage(
+      'mpojjmidmnpcpopbebmecmjdkdbgdeke',
+      { command: 'closeTab' }
+    );
   }
 }
+
 
 function enterFullscreenIfSupported() {
   if (!window.oprt || !window.oprt.enterFullscreen) { /* GX Mobile API */
@@ -958,7 +972,7 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") {
+  if (document.visibilityState === "hidden") {
     try {
       pause();
     } catch (error) {
@@ -972,6 +986,7 @@ document.addEventListener("visibilitychange", () => {
     }
   }
 });
+
 
 
 
