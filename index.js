@@ -123,65 +123,14 @@ var Module = {
   },
 };
 Module.setStatus("Downloading...");
-window.onerror = function (
-  message,
-  source,
-  lineno,
-  colno,
-  error
-) {
-  var text =
-    "REAL GAME ERROR\n\n" +
-    "Name: " +
-    (error && error.name
-      ? error.name
-      : "Error") +
-    "\n\n" +
-    "Message:\n" +
-    String(message) +
-    "\n\n" +
-    "Source:\n" +
-    String(source) +
-    "\n\n" +
-    "Line: " +
-    String(lineno) +
-    "\n" +
-    "Column: " +
-    String(colno);
-
-  if (error && error.stack) {
-    text +=
-      "\n\nStack:\n" +
-      error.stack;
-  }
-
-  console.error(text);
-
-  if (typeof Module !== "undefined") {
-    Module.setStatus = function (msg) {
-      if (msg) {
-        Module.printErr(msg);
-      }
-    };
-  }
-
-  var status =
-    document.getElementById("status");
-
-  if (status) {
-    status.textContent = text;
-  }
-
-  if (
-    typeof spinnerElement !== "undefined" &&
-    spinnerElement
-  ) {
-    spinnerElement.style.display = "none";
-  }
-
-  return true;
+window.onerror = function (event) {
+  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+  Module.setStatus("Exception thrown, see JavaScript console");
+  spinnerElement.style.display = "none";
+  Module.setStatus = function (text) {
+    if (text) Module.printErr("[post-exception status] " + text);
+  };
 };
-
 
 // Route URL GET parameters to argc+argv
 if (typeof window === "object") {
@@ -841,69 +790,32 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
-
 function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
-  if (!canvasElement.classList.contains("active")) {
-    return;
+  if (!canvasElement.classList.contains("active")) { // Wait for the canvas to load.
+    return
   }
-
-  console.log("PAUSE");
-
-  try {
-    if (typeof GM_pause === "function") {
-      GM_pause();
-    }
-  } catch (error) {
-    console.error("GM_pause failed:", error);
-  }
-
+  
+  GM_pause();
   pauseMenu.hidden = false;
   canvasElement.classList.add("paused");
 }
 
 function resume() {
-  console.log("RESUME");
-
-  try {
-    if (typeof GM_unpause === "function") {
-      GM_unpause();
-    }
-  } catch (error) {
-    console.error("GM_unpause failed:", error);
-  }
-
+  GM_unpause();
   pauseMenu.hidden = true;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
-
-  try {
-    enterFullscreenIfSupported();
-  } catch (error) {
-    console.error("Fullscreen restore failed:", error);
-  }
-
-  try {
-    lockOrientationIfSupported();
-  } catch (error) {
-    console.error("Orientation restore failed:", error);
-  }
+  enterFullscreenIfSupported();
+  lockOrientationIfSupported();
 }
 
 function quitIfSupported() {
-  if (window.oprt && window.oprt.closeTab) {
+  if (window.oprt && window.oprt.closeTab) { /* GX Mobile API */
     window.oprt.closeTab();
-  } else if (
-    window.chrome &&
-    window.chrome.runtime &&
-    window.chrome.runtime.sendMessage
-  ) {
-    window.chrome.runtime.sendMessage(
-      'mpojjmidmnpcpopbebmecmjdkdbgdeke',
-      { command: 'closeTab' }
-    );
+  } else if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
+    window.chrome.runtime.sendMessage('mpojjmidmnpcpopbebmecmjdkdbgdeke', { command: 'closeTab' })
   }
 }
-
 
 function enterFullscreenIfSupported() {
   if (!window.oprt || !window.oprt.enterFullscreen) { /* GX Mobile API */
@@ -971,24 +883,13 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
   outputContainerElement.hidden = true;
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") {
-    try {
-      pause();
-    } catch (error) {
-      console.error("Game pause failed:", error);
-    }
-  } else {
-    try {
-      resume();
-    } catch (error) {
-      console.error("Game resume failed:", error);
-    }
+document.addEventListener("visibilitychange", (event) => {
+  if (document.visibilityState != "visible") {
+    pause();
+  } else if (isMultiplayer()) {
+    resume();
   }
 });
-
-
-
 
 window.addEventListener("load", (event) => {
   if ((!window.oprt || !window.oprt.enterFullscreen) && (!window.chrome || !window.chrome.runtime || !window.chrome.runtime.sendMessage)) {
