@@ -1,3 +1,4 @@
+document.title = 'SCRIPT LOADED ' + Date.now();
 
 const CHANGE_ASPECT_RATIO = true;
 
