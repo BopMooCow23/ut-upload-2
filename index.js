@@ -884,9 +884,9 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
 }
 
 document.addEventListener("visibilitychange", (event) => {
-  if (document.visibilityState != "visible") {
+  if (document.visibilityState !== "visible") {
     pause();
-  } else if (isMultiplayer()) {
+  } else {
     resume();
   }
 });
