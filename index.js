@@ -822,6 +822,18 @@ function resume() {
   lockOrientationIfSupported();
 }
 
+if (resumeButton) {
+  resumeButton.addEventListener("click", function () {
+    resume();
+  });
+}
+
+if (quitButton) {
+  quitButton.addEventListener("click", function () {
+    quitIfSupported();
+  });
+}
+
 function quitIfSupported() {
   if (window.oprt && window.oprt.closeTab) { /* GX Mobile API */
     window.oprt.closeTab();
