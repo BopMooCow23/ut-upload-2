@@ -338,7 +338,16 @@
     <div id="pauseMenuContainer" hidden>
       <div id="pauseMenuBorder">
         <div id="pauseMenu">
-          <button id="resumeButton" onclick="resume()">
+          
+<button id="resumeButton" onclick="
+  document.getElementById('pauseMenuContainer').hidden = true;
+  document.getElementById('canvas').classList.remove('paused');
+  document.getElementById('canvas').classList.add('unpaused');
+  resume();
+">
+  Resume
+</button>
+
             Resume
           </button>
           <button id="quitButton" onclick="quitIfSupported()">
