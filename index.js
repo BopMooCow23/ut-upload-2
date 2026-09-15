@@ -1,3 +1,4 @@
+
 const CHANGE_ASPECT_RATIO = true;
 
 var bodyElement = document.getElementsByTagName("body")[0];
@@ -122,65 +123,14 @@ var Module = {
   },
 };
 Module.setStatus("Downloading...");
-window.onerror = function (
-  message,
-  source,
-  lineno,
-  colno,
-  error
-) {
-  var text =
-    "REAL GAME ERROR\n\n" +
-    "Name: " +
-    (error && error.name
-      ? error.name
-      : "Error") +
-    "\n\n" +
-    "Message:\n" +
-    String(message) +
-    "\n\n" +
-    "Source:\n" +
-    String(source) +
-    "\n\n" +
-    "Line: " +
-    String(lineno) +
-    "\n" +
-    "Column: " +
-    String(colno);
-
-  if (error && error.stack) {
-    text +=
-      "\n\nStack:\n" +
-      error.stack;
-  }
-
-  console.error(text);
-
-  if (typeof Module !== "undefined") {
-    Module.setStatus = function (msg) {
-      if (msg) {
-        Module.printErr(msg);
-      }
-    };
-  }
-
-  var status =
-    document.getElementById("status");
-
-  if (status) {
-    status.textContent = text;
-  }
-
-  if (
-    typeof spinnerElement !== "undefined" &&
-    spinnerElement
-  ) {
-    spinnerElement.style.display = "none";
-  }
-
-  return true;
+window.onerror = function (event) {
+  // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+  Module.setStatus("Exception thrown, see JavaScript console");
+  spinnerElement.style.display = "none";
+  Module.setStatus = function (text) {
+    if (text) Module.printErr("[post-exception status] " + text);
+  };
 };
-
 
 // Route URL GET parameters to argc+argv
 if (typeof window === "object") {
@@ -852,7 +802,7 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
 
 function resume() {
   GM_unpause();
-  pauseMenu.hidden = false;
+  pauseMenu.hidden = true;
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
   enterFullscreenIfSupported();
@@ -933,28 +883,11 @@ if (/Android|iPhone|iPod/i.test(navigator.userAgent)) {
   outputContainerElement.hidden = true;
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") {
-   
-    try {
-      pause();
-    } catch (error) {
-      console.error("Game pause failed:", error);
-    }
-  } else {
-    
-    try {
-      if (typeof GM_is_multiplayer === "function") {
-        if (GM_is_multiplayer()) {
-          resume();
-        }
-      } else {
-        
-        resume();
-      }
-    } catch (error) {
-      console.error("Game resume failed:", error);
-    }
+document.addEventListener("visibilitychange", (event) => {
+  if (document.visibilityState != "visible") {
+    pause();
+  } else if (isMultiplayer()) {
+    resume();
   }
 });
 
