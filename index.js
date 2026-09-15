@@ -17,6 +17,35 @@ var resumeButton = document.getElementById("resumeButton");
 var quitButton = document.getElementById("quitButton");
 canvasElement.addEventListener("click", function() { canvasElement.focus(); });
 
+if (resumeButton) {
+  resumeButton.addEventListener("click", function () {
+    // Hide the menu immediately.
+    pauseMenu.hidden = true;
+
+    // Restore the canvas appearance.
+    canvasElement.classList.remove("paused");
+    canvasElement.classList.add("unpaused");
+
+    // Resume Undertale.
+    try {
+      GM_unpause();
+    } catch (error) {
+      console.error("GM_unpause failed:", error);
+    }
+
+    enterFullscreenIfSupported();
+    lockOrientationIfSupported();
+  });
+}
+
+if (quitButton) {
+  quitButton.addEventListener("click", function () {
+    quitIfSupported();
+  });
+}
+
+
+
 const messageContainerElement = document.getElementById("message-container");
 const messagesElement = document.getElementById("messages");
 let rollbackMessages = [];
