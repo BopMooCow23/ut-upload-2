@@ -802,14 +802,20 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
 }
 
 function resume() {
-  // Hide the menu FIRST.
+  try {
+    GM_unpause();
+  } catch (e) {
+    document.title = 'GM_unpause threw: ' + e.message;
+    return;
+  }
+
   pauseMenu.hidden = true;
+
+  const computed = window.getComputedStyle(pauseMenu).display;
+  document.title = 'hidden=' + pauseMenu.hidden + ' display=' + computed + ' matches=' + (document.querySelectorAll('#pauseMenuContainer').length);
+
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
-
-  // Then tell the game to resume.
-  GM_unpause();
-
   enterFullscreenIfSupported();
   lockOrientationIfSupported();
 }
