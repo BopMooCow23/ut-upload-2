@@ -790,37 +790,32 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
-function pause() {
-  // Wait until the game canvas has loaded
+function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
   if (!canvasElement.classList.contains("active")) {
     return;
   }
 
-  GM_pause();
-
-  // Show HTML pause menu
   pauseMenu.hidden = false;
-  pauseMenu.style.display = "flex";
-
   canvasElement.classList.add("paused");
   canvasElement.classList.remove("unpaused");
+
+  GM_pause();
 }
 
 function resume() {
-  GM_unpause();
-
-  // Hide HTML pause menu
+  // Hide the menu FIRST.
   pauseMenu.hidden = true;
-  pauseMenu.style.display = "none";
-
   canvasElement.classList.remove("paused");
   canvasElement.classList.add("unpaused");
 
-  canvasElement.focus();
+  // Then tell the game to resume.
+  GM_unpause();
 
   enterFullscreenIfSupported();
   lockOrientationIfSupported();
 }
+
+
 
 if (resumeButton) {
   resumeButton.addEventListener("click", function () {
