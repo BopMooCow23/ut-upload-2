@@ -789,10 +789,13 @@ function ensureAspectRatio() {
   canvasElement.style.width = newWidth + "px";
 }
 
+let gamePaused = false;
+
 function pause() { // Don't change the name - GX Mobile calls it when the app becomes inactive.
-  if (!canvasElement.classList.contains("active")) {
+  if (!canvasElement.classList.contains("active") || gamePaused) {
     return;
   }
+  gamePaused = true;
 
   pauseMenu.hidden = false;
   canvasElement.classList.add("paused");
@@ -802,12 +805,24 @@ function pause() { // Don't change the name - GX Mobile calls it when the app be
 }
 
 function resume() {
+  if (!gamePaused) {
+    return; // never call GM_unpause() unless we actually paused
+  }
+
   try {
     GM_unpause();
   } catch (e) {
-    document.title = 'GM_unpause threw: ' + e.message;
+    console.error("GM_unpause threw:", e);
     return;
   }
+  gamePaused = false;
+
+  pauseMenu.hidden = true;
+  canvasElement.classList.remove("paused");
+  canvasElement.classList.add("unpaused");
+  enterFullscreenIfSupported();
+  lockOrientationIfSupported();
+}
 
   pauseMenu.hidden = true;
 
